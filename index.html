@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<title>Ranking Oficial SDLB (2020-2026)</title>
+				<!-- Tailwind CSS CDN -->
+				<script src="https://cdn.tailwindcss.com"></script>
+				<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+					<style>
+						body { background-color: #0b0f19; color: #f3f4f6; font-family: system-ui, -apple-system, sans-serif; }
+						.glass-card { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+						.gold-border { border-color: rgba(234, 179, 8, 0.4); background: linear-gradient(135deg, rgba(234,179,8,0.1) 0%, rgba(17,24,39,0.8) 100%); }
+						.silver-border { border-color: rgba(148, 163, 184, 0.4); background: linear-gradient(135deg, rgba(148,163,184,0.1) 0%, rgba(17,24,39,0.8) 100%); }
+						.bronze-border { border-color: rgba(217, 119, 6, 0.4); background: linear-gradient(135deg, rgba(217,119,6,0.1) 0%, rgba(17,24,39,0.8) 100%); }
+					</style>
+				</head>
+	<body class="min-h-screen p-4 md:p-8">
+		<div class="max-w-6xl mx-auto space-y-6">
+
+			<!-- Header -->
+			<header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 glass-card p-6 rounded-2xl">
+				<div>
+					<h1 class="text-3xl font-extrabold flex items-center gap-3">
+						<i class="fa-solid fa-trophy text-indigo-500"></i> Ranking Oficial SDLB (2020-2026)
+					</h1>
+					<p class="text-gray-400 text-sm mt-1 flex items-center gap-2">
+						<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+						Última actualización: <span id="lastUpdateText" class="text-gray-300 font-medium">31/10/2026, 12:01 p. m.</span>
+					</p>
+				</div>
+				<button onclick="toggleAdminModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-5 py-2.5 rounded-xl transition flex items-center gap-2 shadow-lg shadow-indigo-600/30">
+					<i class="fa-solid fa-user-plus"></i> Añadir Jugador
+				</button>
+			</header>
+
+			<!-- Podium (Top 3) -->
+			<div id="podiumContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+				<!-- Se genera dinámicamente con JS -->
+			</div>
+
+			<!-- Búsqueda -->
+			<div class="glass-card p-4 rounded-2xl flex flex-col md:flex-row gap-4 items-center justify-between">
+				<div class="relative w-full md:w-96">
+					<i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-gray-400"></i>
+					<input type="text" id="searchInput" oninput="renderTable()" placeholder="Buscar jugador por nick..." class="w-full bg-gray-900 border border-gray-700 rounded-xl py-2.5 pl-11 pr-4 text-sm focus:outline-none focus:border-indigo-500">
+            </div>
+			</div>
+
+			<!-- Tabla de posiciones -->
+			<div class="glass-card rounded-2xl overflow-hidden">
+				<table class="w-full text-left border-collapse">
+					<thead>
+						<tr class="border-b border-gray-800 text-gray-400 text-xs uppercase tracking-wider">
+							<th class="p-4">Puesto</th>
+							<th class="p-4">Jugador</th>
+							<th class="p-4">Puntaje Total</th>
+							<th class="p-4 text-center">Tendencia</th>
+							<th class="p-4 text-center">Acciones Rápida (+ / -)</th>
+						</tr>
+					</thead>
+					<tbody id="tableBody" class="divide-y divide-gray-800/50 text-sm align-middle">
+						<!-- Filas dinámicas -->
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<!-- Modal para agregar nuevos jugadores -->
+		<div id="adminModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+			<div class="glass-card bg-gray-900 p-6 rounded-2xl max-w-md w-full space-y-4">
+				<h3 class="text-xl font-bold">Agregar Nuevo Jugador</h3>
+				<input type="text" id="newPlayerName" placeholder="Nick de Minecraft (ej: Exatermineitor)" class="w-full bg-gray-800 border border-gray-700 p-3 rounded-xl focus:outline-none focus:border-indigo-500">
+					<input type="number" id="newPlayerScore" placeholder="Puntaje inicial" class="w-full bg-gray-800 border border-gray-700 p-3 rounded-xl focus:outline-none focus:border-indigo-500">
+						<div class="flex justify-end gap-3 pt-2">
+							<button onclick="toggleAdminModal()" class="px-4 py-2 text-gray-400 hover:text-white">Cancelar</button>
+							<button onclick="addPlayer()" class="bg-indigo-600 hover:bg-indigo-500 px-5 py-2 rounded-xl font-medium">Guardar</button>
+						</div>
+					</div>
+		</div>
+
+		<script>
+			// Lista completa de los 40 competidores del torneo SDLB
+			let players = [
+			{ id: 1, name: "Exatermineitor", score: 1089, previousRank: 1 },
+			{ id: 2, name: "cardanlol", score: 991, previousRank: 2 },
+			{ id: 3, name: "GRE3E", score: 942, previousRank: 3 },
+			{ id: 4, name: "TahuPro2", score: 827, previousRank: 4 },
+			{ id: 5, name: "DORIFA13", score: 811, previousRank: 5 },
+			{ id: 6, name: "Motecrack", score: 797, previousRank: 6 },
+			{ id: 7, name: "saintcriss", score: 796, previousRank: 7 },
+			{ id: 8, name: "diegusu", score: 795, previousRank: 8 },
+			{ id: 9, name: "DinooFE", score: 794, previousRank: 9 },
+			{ id: 10, name: "Pezkadurri", score: 791, previousRank: 10 },
+			{ id: 11, name: "M0wiii", score: 788, previousRank: 11 },
+			{ id: 12, name: "enamoramiento", score: 787, previousRank: 12 },
+			{ id: 13, name: "LittleHappyMan", score: 785, previousRank: 13 },
+			{ id: 14, name: "nitofilia", score: 755, previousRank: 14 },
+			{ id: 15, name: "NicoWo", score: 753, previousRank: 15 },
+			{ id: 16, name: "altruismkills", score: 749, previousRank: 16 },
+			{ id: 17, name: "aridark22", score: 741, previousRank: 17 },
+			{ id: 18, name: "iGabbz_", score: 740, previousRank: 18 },
+			{ id: 19, name: "KjaDeAgua", score: 740, previousRank: 19 },
+			{ id: 20, name: "chicharitosantos", score: 739, previousRank: 20 },
+			{ id: 21, name: "Visionpapo", score: 737, previousRank: 21 },
+			{ id: 22, name: "quiquiX", score: 735, previousRank: 22 },
+			{ id: 23, name: "Padill028", score: 730, previousRank: 23 },
+			{ id: 24, name: "FaridZC", score: 722, previousRank: 24 },
+			{ id: 25, name: "eckrof", score: 714, previousRank: 25 },
+			{ id: 26, name: "Hleyn_", score: 710, previousRank: 26 },
+			{ id: 27, name: "Axenn24", score: 709, previousRank: 27 },
+			{ id: 28, name: "zCuaker", score: 708, previousRank: 28 },
+			{ id: 29, name: "Lexito", score: 706, previousRank: 29 },
+			{ id: 30, name: "M1lder_", score: 704, previousRank: 30 },
+			{ id: 31, name: "g0malin", score: 699, previousRank: 31 },
+			{ id: 32, name: "jfgz12", score: 681, previousRank: 32 },
+			{ id: 33, name: "Patato281612", score: 679, previousRank: 33 },
+			{ id: 34, name: "Barrenito010308", score: 676, previousRank: 34 },
+			{ id: 35, name: "Offly", score: 674, previousRank: 35 },
+			{ id: 36, name: "TELLS", score: 671, previousRank: 36 },
+			{ id: 37, name: "LicGonzales", score: 669, previousRank: 37 },
+			{ id: 38, name: "Nandoshot", score: 641, previousRank: 38 },
+			{ id: 39, name: "Chupo58", score: 602, previousRank: 39 },
+			{ id: 40, name: "Dreus", score: 561, previousRank: 40 }
+			];
+
+			function updateTimestamp() {
+			const now = new Date();
+			const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true };
+			const el = document.getElementById('lastUpdateText');
+			if (el) el.innerText = now.toLocaleDateString('es-ES', options);
+			}
+
+			function sortAndCalculateRanks() {
+			players.sort((a, b) => b.score - a.score);
+			}
+
+			function renderPodium() {
+			const top3 = players.slice(0, 3);
+			const container = document.getElementById('podiumContainer');
+			if (!container) return;
+			const styles = ['gold-border', 'silver-border', 'bronze-border'];
+			const medals = ['🥇 1ER LUGAR', '🥈 2DO LUGAR', '🥉 3ER LUGAR'];
+
+			container.innerHTML = top3.map((p, i) => `
+			<div class="glass-card ${styles[i]} p-6 rounded-2xl flex justify-between items-center relative overflow-hidden">
+				<div class="space-y-1">
+					<span class="text-xs font-bold tracking-wider text-yellow-500 uppercase">${medals[i]}</span>
+					<div class="flex items-center gap-3 mt-1">
+						<img src="https://mc-heads.net/avatar/${p.name}/40"
+							 alt="${p.name}"
+							 class="w-10 h-10 rounded-lg shadow-md bg-gray-800 border border-white/10"
+							 onerror="this.src='https://mc-heads.net/avatar/MHF_Steve/40'">
+							<div>
+								<h2 class="text-xl font-black">${p.name}</h2>
+								<p class="text-gray-400 text-xs">Competidor Oficial</p>
+							</div>
+						</div>
+					<p class="text-2xl font-extrabold text-white mt-3">
+						${p.score.toLocaleString()} <span class="text-xs font-normal text-gray-400">PTS</span>
+					</p>
+				</div>
+				<div class="text-4xl font-black opacity-20">#${i+1}</div>
+			</div>
+			`).join('');
+			}
+
+			function renderTable() {
+			sortAndCalculateRanks();
+			const tbody = document.getElementById('tableBody');
+			const searchInput = document.getElementById('searchInput');
+			if (!tbody) return;
+			const search = searchInput ? searchInput.value.toLowerCase() : '';
+
+			const filtered = players.filter(p => p.name.toLowerCase().includes(search));
+
+			tbody.innerHTML = filtered.map((p) => {
+			const currentRank = players.findIndex(item => item.id === p.id) + 1;
+			let trendHtml = '<span class="text-gray-500 font-medium">—</span>';
+
+			if (p.previousRank !== undefined) {
+			const diff = p.previousRank - currentRank;
+			if (diff > 0) {
+			trendHtml = `<span class="text-emerald-400 font-bold inline-flex items-center gap-1">
+				<i class="fa-solid fa-arrow-up"></i> +${diff}
+			</span>`;
+			} else if (diff < 0) {
+                        trendHtml = `<span class="text-rose-500 font-bold inline-flex items-center gap-1">
+				<i class="fa-solid fa-arrow-down"></i> ${diff}
+			</span>`;
+			}
+			}
+
+			return `
+			<tr class="hover:bg-gray-800/30 transition">
+				<td class="p-4 font-bold text-gray-300">#${currentRank}</td>
+				<td class="p-4 font-semibold text-white flex items-center gap-3">
+					<img src="https://mc-heads.net/avatar/${p.name}/32"
+						 alt="${p.name}"
+						 class="w-8 h-8 rounded-lg shadow-md bg-gray-800 border border-white/10"
+						 onerror="this.src='https://mc-heads.net/avatar/MHF_Steve/32'">
+						<span>${p.name}</span>
+					</td>
+				<td class="p-4 font-bold text-indigo-400">
+					<input type="number"
+						   value="${p.score}"
+						   onchange="setDirectScore(${p.id}, this.value)"
+						   class="bg-gray-900 border border-gray-700 text-indigo-400 font-bold rounded-lg px-2 py-1 w-24 text-center focus:outline-none focus:border-indigo-500">
+					</td>
+				<td class="p-4 text-center">${trendHtml}</td>
+				<td class="p-4 text-center">
+					<div class="flex justify-center gap-2">
+						<button onclick="updateScore(${p.id}, 50)" class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/30 w-8 h-8 rounded-lg font-bold transition">+</button>
+						<button onclick="updateScore(${p.id}, -50)" class="bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white border border-rose-500/30 w-8 h-8 rounded-lg font-bold transition">-</button>
+						<button onclick="deletePlayer(${p.id})" class="bg-gray-800 hover:bg-rose-900 text-gray-400 hover:text-rose-300 w-8 h-8 rounded-lg transition">
+							<i class="fa-solid fa-trash text-xs"></i>
+						</button>
+					</div>
+				</td>
+			</tr>
+			`;
+			}).join('');
+
+			renderPodium();
+			}
+
+			function setDirectScore(id, newScore) {
+			players.forEach((p) => {
+			p.previousRank = players.findIndex(item => item.id === p.id) + 1;
+			});
+			const player = players.find(p => p.id === id);
+			if (player) {
+			player.score = Math.max(0, parseInt(newScore) || 0);
+			updateTimestamp();
+			renderTable();
+			}
+			}
+
+			function updateScore(id, amount) {
+			players.forEach((p) => {
+			p.previousRank = players.findIndex(item => item.id === p.id) + 1;
+			});
+
+			const player = players.find(p => p.id === id);
+			if (player) {
+			player.score = Math.max(0, player.score + amount);
+			updateTimestamp();
+			renderTable();
+			}
+			}
+
+			function deletePlayer(id) {
+			players = players.filter(p => p.id !== id);
+			updateTimestamp();
+			renderTable();
+			}
+
+			function toggleAdminModal() {
+			const modal = document.getElementById('adminModal');
+			if (modal) modal.classList.toggle('hidden');
+			}
+
+			function addPlayer() {
+			const nameInput = document.getElementById('newPlayerName');
+			const scoreInput = document.getElementById('newPlayerScore');
+			const name = nameInput ? nameInput.value.trim() : '';
+			const score = scoreInput ? (parseInt(scoreInput.value) || 0) : 0;
+
+			if (name) {
+			players.push({
+			id: Date.now(),
+			name: name,
+			score: score,
+			previousRank: players.length + 1
+			});
+			toggleAdminModal();
+			if (nameInput) nameInput.value = '';
+			if (scoreInput) scoreInput.value = '';
+			updateTimestamp();
+			renderTable();
+			}
+			}
+
+			// Ejecutar al cargar la página
+			window.onload = function() {
+			renderTable();
+			};
+		</script>
+	</body>
+</html>
